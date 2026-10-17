@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Yıldızlı Günlükler ve Aşk Sahnesi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fce7f3; /* Açık pembe arka plan */
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        .handwriting {
+            font-family: 'Caveat', cursive;
+        }
+        .notebook-paper {
+            background-color: #fffef9;
+            background-image: linear-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 100% 2.2rem;
+            line-height: 2.2rem;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .realistic-book {
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .realistic-book:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.15), 0 0 15px rgba(244, 114, 182, 0.3);
+        }
+        @keyframes float-gentle {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+        .animate-float {
+            animation: float-gentle 4s ease-in-out infinite;
+        }
+
+        .journal-wrapper {
+            perspective: 1000px;
+            margin-bottom: 1.5rem;
+        }
+        .realistic-journal {
+            position: relative;
+            width: 100px;
+            height: 140px;
+            border-radius: 3px 12px 12px 3px;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.6s ease;
+            box-shadow: 
+                inset 4px 0 10px rgba(0, 0, 0, 0.15),
+                inset -1px 0 2px rgba(255, 255, 255, 0.4),
+                5px 5px 15px rgba(0, 0, 0, 0.25),
+                10px 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        .journal-wrapper:hover .realistic-journal {
+            transform: rotateY(-25deg) rotateX(10deg) scale(1.15);
+            box-shadow: 
+                inset 4px 0 10px rgba(0, 0, 0, 0.1),
+                inset -1px 0 2px rgba(255, 255, 255, 0.4),
+                15px 15px 30px rgba(0, 0, 0, 0.4),
+                25px 25px 40px rgba(0, 0, 0, 0.2);
+        }
+        .realistic-journal::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 12px;
+            background: linear-gradient(to right, rgba(255,255,255,0.2) 0%, rgba(0,0,0,0.25) 20%, rgba(255,255,255,0.1) 40%, rgba(0,0,0,0.4) 100%);
+            border-radius: 3px 0 0 3px;
+            z-index: 10;
+        }
+        .realistic-journal .pages {
+            position: absolute;
+            right: -6px;
+            top: 3px;
+            bottom: 3px;
+            width: 6px;
+            background: repeating-linear-gradient(to bottom, #fdfbf7, #fdfbf7 2px, #d4d4d8 3px);
+            border-radius: 0 4px 4px 0;
+            border: 1px solid #a1a1aa;
+            border-left: none;
+            z-index: -1;
+            box-shadow: inset -2px 0 4px rgba(0,0,0,0.1);
+            transform: translateZ(-1px);
+        }
+        .realistic-journal .bookmark {
+            position: absolute;
+            top: -2px;
+            right: 20px;
+            width: 12px;
+            height: 45px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.4);
+            z-index: 5;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 8px), 0 100%);
+            transform: translateZ(1px);
+        }
+        .blue-book {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            border-left: 3px solid #1e40af;
+        }
+        .pink-book {
+            background: linear-gradient(135deg, #be185d 0%, #701a39 100%);
+            border-left: 3px solid #db2777;
+        }
+        .leather-texture {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.3'/%3E%3C/svg%3E");
+            mix-blend-mode: multiply;
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen relative">
+
+    <canvas id="starry-canvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+    <div class="relative z-10 min-h-screen flex flex-col justify-between p-4 sm:p-6 md:p-8">
+        
+        <header class="w-full max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center py-4 px-6 bg-white/70 backdrop-blur-md rounded-3xl shadow-sm border border-pink-200 gap-4">
+            <div class="flex items-center space-x-2">
+                <span class="text-3xl animate-pulse">✨</span>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">Yıldızlı Dünyamız</h1>
+            </div>
+            <div id="nav-actions" class="hidden flex flex-wrap justify-center items-center gap-2">
+                <button onclick="goToCoupleScene()" class="px-4 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 rounded-xl text-sm font-semibold transition shadow-sm">
+                    🌙 Ana Menü (Aşk Köşesi)
+                </button>
+                <button onclick="goToDashboard()" class="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white rounded-xl text-sm font-medium transition shadow-md">
+                    Günlükler & Aktiviteler
+                </button>
+            </div>
+        </header>
+
+        <main id="view-entry" class="flex-1 flex items-center justify-center py-12">
+            <div class="bg-white/85 backdrop-blur-xl p-8 sm:p-10 rounded-[2rem] shadow-2xl border border-pink-300 w-full max-w-md text-center">
+                <div class="w-20 h-20 bg-gradient-to-br from-pink-100 to-rose-100 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-inner border border-pink-200">
+                    🔒
+                </div>
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-2">Hoş Geldiniz</h2>
+                <p class="text-slate-600 mb-8 font-medium">Özel dünyanıza girmek için şifrenizi girin.</p>
+                
+                <form onsubmit="handleEntry(event)" class="space-y-5">
+                    <div>
+                        <input type="password" id="entry-password" placeholder="Şifre (Örn: kalp)" required
+                            class="w-full px-5 py-4 rounded-2xl border-2 border-pink-200 focus:outline-none focus:border-pink-500 bg-white/50 text-center text-xl tracking-widest shadow-sm transition">
+                    </div>
+                    <button type="submit" class="w-full py-4 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white text-lg font-bold rounded-2xl shadow-lg shadow-pink-300/50 transition duration-300 transform hover:-translate-y-1">
+                        Giriş Yap
+                    </button>
+                </form>
+            </div>
+        </main>
+
+        <main id="view-couple" class="flex-1 flex flex-col items-center justify-center py-6 hidden w-full">
+            <div class="w-full max-w-3xl relative overflow-hidden rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-pink-300/50 p-8 sm:p-12 bg-white/40 backdrop-blur-md flex flex-col items-center text-center">
+                
+                <!-- Split Heart Symbol (Half Blue, Half Pink) -->
+                <div class="relative w-24 h-24 mb-6 flex items-center justify-center drop-shadow-xl hover:scale-110 transition duration-500">
+                    <svg viewBox="0 0 24 24" class="w-full h-full">
+                        <defs>
+                            <linearGradient id="splitHeartGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="50%" stop-color="#3b82f6"/> <!-- Blue -->
+                                <stop offset="50%" stop-color="#ec4899"/> <!-- Pink -->
+                            </linearGradient>
+                        </defs>
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="url(#splitHeartGrad)"/>
+                    </svg>
+                </div>
+
+                <!-- Couple Visual Container (Using image_4.png) -->
+                <div class="relative z-10 my-4 flex flex-col items-center w-full">
+                    <!-- Speech Bubbles -->
+                    <div class="flex justify-between items-end w-full max-w-sm mb-[-20px] px-4 z-20">
+                        <!-- Boy Speech (Left) -->
+                        <div class="bg-blue-600 text-white px-5 py-3 rounded-2xl rounded-br-none shadow-lg text-sm sm:text-base font-bold animate-float border-2 border-white/20">
+                            "Seni seviyorum..." 💙
+                        </div>
+                        <!-- Girl Speech (Right) -->
+                        <div class="bg-pink-500 text-white px-5 py-3 rounded-2xl rounded-bl-none shadow-lg text-sm sm:text-base font-bold animate-float border-2 border-white/20" style="animation-delay: 1s;">
+                            "Ben de seni..." 💖
+                        </div>
+                    </div>
+
+                    <!-- The Image -->
+                    <div class="relative w-72 h-96 sm:w-80 sm:h-[28rem] rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white bg-slate-900 group z-10">
+                        <img src="image_4.png" 
+                             alt="Sarılan Çift" 
+                             class="w-full h-full object-cover transform group-hover:scale-105 transition duration-700"
+                             onerror="this.src='https://placehold.co/400x600/1e293b/ffffff?text=Aşk+Fotoğrafı'">
+                    </div>
+                </div>
+
+                <!-- Action Button to Go to Dashboard -->
+                <div class="relative z-10 mt-10">
+                    <button onclick="goToDashboard()" class="px-10 py-4 bg-gradient-to-r from-pink-500 via-rose-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold rounded-2xl shadow-xl shadow-pink-500/40 transition transform hover:scale-105 text-lg flex items-center gap-3">
+                        <span>📖 Günlüklere ve Aktivitelere Git</span>
+                        <span class="text-2xl">→</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <main id="view-dashboard" class="flex-1 flex flex-col items-center justify-center py-8 hidden max-w-5xl mx-auto w-full">
+            <div class="text-center mb-10">
+                <h3 class="text-4xl font-extrabold text-slate-800 mb-3 drop-shadow-sm">Aktivite Köşesi</h3>
+                <p class="text-lg text-slate-600 font-medium">Lütfen açmak istediğiniz defteri veya bölümü seçin.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full px-4">
+                
+                <!-- Realistic Blue Journal Card -->
+                <div onclick="openPasswordModal('blue')" class="group cursor-pointer bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-lg border border-blue-100 flex flex-col items-center text-center transition-all hover:bg-white hover:-translate-y-2 hover:shadow-2xl">
+                    <div class="journal-wrapper">
+                        <div class="realistic-journal blue-book">
+                            <div class="absolute inset-0 leather-texture rounded-r-[12px]"></div>
+                            <div class="pages"></div>
+                            <div class="bookmark bg-red-500"></div>
+                            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[70px] p-2 border border-yellow-500/80 bg-blue-950/90 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] flex flex-col items-center justify-center">
+                                <span class="text-[9px] text-yellow-500 font-serif tracking-widest font-bold">GÜNLÜK</span>
+                                <div class="w-full h-px bg-yellow-500 mt-1.5 opacity-60"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mt-4 mb-2">Mavi Günlük</h3>
+                    <span class="mt-auto px-5 py-2.5 bg-blue-50 text-blue-600 text-sm font-bold rounded-xl group-hover:bg-blue-600 group-hover:text-white transition duration-300">Aç</span>
+                </div>
+
+                <!-- Realistic Pink Journal Card -->
+                <div onclick="openPasswordModal('pink')" class="group cursor-pointer bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-lg border border-pink-100 flex flex-col items-center text-center transition-all hover:bg-white hover:-translate-y-2 hover:shadow-2xl">
+                    <div class="journal-wrapper">
+                        <div class="realistic-journal pink-book">
+                            <div class="absolute inset-0 leather-texture rounded-r-[12px]"></div>
+                            <div class="pages"></div>
+                            <div class="bookmark bg-blue-300"></div>
+                            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[70px] p-2 border border-pink-300/80 bg-pink-950/90 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)] flex flex-col items-center justify-center">
+                                <span class="text-[9px] text-pink-200 font-serif tracking-widest font-bold">GÜNLÜK</span>
+                                <div class="w-full h-px bg-pink-300 mt-1.5 opacity-60"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mt-4 mb-2">Pembe Günlük</h3>
+                    <span class="mt-auto px-5 py-2.5 bg-pink-50 text-pink-600 text-sm font-bold rounded-xl group-hover:bg-pink-600 group-hover:text-white transition duration-300">Aç</span>
+                </div>
+
+                <!-- Leave a Quote Card -->
+                <div onclick="openLeaveQuote()" class="group cursor-pointer bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-lg border border-purple-100 flex flex-col items-center text-center transition-all hover:bg-white hover:-translate-y-2 hover:shadow-2xl">
+                    <div class="w-24 h-28 mb-6 bg-purple-100 text-purple-500 rounded-2xl flex items-center justify-center text-5xl shadow-inner border border-purple-200 group-hover:scale-110 transition duration-300">
+                        ✍️
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Söz Bırak</h3>
+                    <span class="mt-auto px-5 py-2.5 bg-purple-50 text-purple-600 text-sm font-bold rounded-xl group-hover:bg-purple-600 group-hover:text-white transition duration-300">Yazı Yaz</span>
+                </div>
+
+                <!-- Quotes View Card -->
+                <div onclick="openPasswordModal('quotes')" class="group cursor-pointer bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-lg border border-amber-100 flex flex-col items-center text-center transition-all hover:bg-white hover:-translate-y-2 hover:shadow-2xl">
+                    <div class="w-24 h-28 mb-6 bg-amber-100 text-amber-500 rounded-2xl flex items-center justify-center text-5xl shadow-inner border border-amber-200 group-hover:scale-110 transition duration-300">
+                        📜
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Sözler Defteri</h3>
+                    <span class="mt-auto px-5 py-2.5 bg-amber-50 text-amber-600 text-sm font-bold rounded-xl group-hover:bg-amber-500 group-hover:text-white transition duration-300">Defteri Aç</span>
+                </div>
+
+                <!-- Draw View Card -->
+                <div onclick="openDrawView()" class="group cursor-pointer bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-lg border border-green-100 flex flex-col items-center text-center transition-all hover:bg-white hover:-translate-y-2 hover:shadow-2xl">
+                    <div class="w-24 h-28 mb-6 bg-green-100 text-green-500 rounded-2xl flex items-center justify-center text-5xl shadow-inner border border-green-200 group-hover:scale-110 transition duration-300">
+                        🎨
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Tuval & Çizim</h3>
+                    <span class="mt-auto px-5 py-2.5 bg-green-50 text-green-600 text-sm font-bold rounded-xl group-hover:bg-green-500 group-hover:text-white transition duration-300">Çizmeye Başla</span>
+                </div>
+
+                <!-- Gallery View Card -->
+                <div onclick="openPasswordModal('gallery')" class="group cursor-pointer bg-white/80 backdrop-blur-xl p-8 rounded-[2rem] shadow-lg border border-teal-100 flex flex-col items-center text-center transition-all hover:bg-white hover:-translate-y-2 hover:shadow-2xl">
+                    <div class="w-24 h-28 mb-6 bg-teal-100 text-teal-500 rounded-2xl flex items-center justify-center text-5xl shadow-inner border border-teal-200 group-hover:scale-110 transition duration-300">
+                        🖼️
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">Resim Galerisi</h3>
+                    <span class="mt-auto px-5 py-2.5 bg-teal-50 text-teal-600 text-sm font-bold rounded-xl group-hover:bg-teal-500 group-hover:text-white transition duration-300">Galeriyi Gez</span>
+                </div>
+
+            </div>
+        </main>
+
+        
+        <!-- Individual Journal View -->
+        <main id="view-journal" class="flex-1 flex flex-col items-center py-6 hidden max-w-4xl mx-auto w-full">
+            <div class="w-full flex justify-between items-center mb-6 px-4">
+                <h2 id="journal-heading" class="text-3xl font-extrabold text-slate-800">Günlük</h2>
+                <button onclick="goToDashboard()" class="px-5 py-2 bg-white/90 hover:bg-white text-slate-700 font-bold rounded-xl shadow-md border border-slate-200 transition">
+                    ← Geri Dön
+                </button>
+            </div>
+            <div class="w-full bg-white rounded-[2rem] shadow-2xl border border-slate-200 overflow-hidden">
+                <div class="bg-slate-800 text-white py-3 px-6 text-center font-bold tracking-widest text-sm" id="journal-label">
+                    DEFTER
+                </div>
+                <div class="p-6 sm:p-10">
+                    <textarea id="journal-textarea" class="w-full h-[50vh] min-h-[300px] resize-none focus:outline-none bg-transparent handwriting text-2xl notebook-paper text-slate-800 p-2"></textarea>
+                </div>
+                <div class="bg-slate-50 p-4 border-t border-slate-200 flex justify-end items-center gap-4">
+                    <span id="save-status" class="text-emerald-500 text-sm font-bold hidden">✓ Başarıyla kaydedildi!</span>
+                    <button onclick="saveJournalNote()" class="px-8 py-3 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl shadow-lg transition">
+                        Notu Kaydet
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Leave Quote View -->
+        <main id="view-leave-quote" class="flex-1 flex flex-col items-center justify-center py-8 hidden max-w-xl mx-auto w-full px-4">
+            <div class="w-full bg-white/95 backdrop-blur-md p-8 sm:p-10 rounded-[2rem] shadow-2xl border border-purple-200">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
+                        <span>✍️</span> Söz Bırak
+                    </h2>
+                    <button onclick="goToDashboard()" class="text-sm text-slate-500 hover:text-slate-800 font-bold">Vazgeç</button>
+                </div>
+                <form onsubmit="submitQuote(event)" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">İçinden Geçenler...</label>
+                        <textarea id="quote-text" rows="5" placeholder="Buraya o güzel sözü yaz..." required
+                            class="w-full px-5 py-4 rounded-2xl border-2 border-purple-100 focus:outline-none focus:border-purple-400 bg-purple-50/50 text-slate-700 text-lg"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Kimden? (İsteğe bağlı)</label>
+                        <input type="text" id="quote-author" placeholder="Örn: Anonim ya da ismin"
+                            class="w-full px-5 py-4 rounded-2xl border-2 border-purple-100 focus:outline-none focus:border-purple-400 bg-purple-50/50 text-slate-700 font-medium">
+                    </div>
+                    <button type="submit" class="w-full py-4 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white text-lg font-bold rounded-2xl shadow-xl shadow-purple-200 transition duration-300">
+                        Deftere Gönder
+                    </button>
+                </form>
+            </div>
+        </main>
+
+        <!-- Quotes List View -->
+        <main id="view-quotes" class="flex-1 flex flex-col items-center py-6 hidden max-w-4xl mx-auto w-full px-4">
+            <div class="w-full flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-3xl font-extrabold text-slate-800">Sözler Defteri</h2>
+                    <p class="text-slate-600 font-medium mt-1">Bırakılan o güzel cümleler...</p>
+                </div>
+                <button onclick="goToDashboard()" class="px-5 py-2 bg-white/90 hover:bg-white text-slate-700 font-bold rounded-xl shadow-md border border-slate-200 transition">
+                    ← Geri Dön
+                </button>
+            </div>
+
+            <div class="w-full bg-amber-50/90 backdrop-blur-md rounded-[2rem] shadow-2xl border border-amber-200 p-6 sm:p-10">
+                <div id="quotes-container" class="space-y-6">
+                    <!-- Dinamik sözler -->
+                </div>
+            </div>
+        </main>
+
+        
+        <!-- Draw View -->
+        <main id="view-draw" class="flex-1 flex flex-col items-center py-6 hidden max-w-5xl mx-auto w-full px-4">
+            <div class="w-full flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-3xl font-extrabold text-slate-800">Tuval 🎨</h2>
+                    <p class="text-slate-600 font-medium mt-1">İçinden geldiği gibi çiz.</p>
+                </div>
+                <button onclick="goToDashboard()" class="px-5 py-2 bg-white/90 hover:bg-white text-slate-700 font-bold rounded-xl shadow-md border border-slate-200 transition">
+                    ← Geri Dön
+                </button>
+            </div>
+
+            <div class="w-full bg-white rounded-[2rem] shadow-2xl border border-green-200 p-4 sm:p-6 flex flex-col gap-4">
+                <!-- Toolbar -->
+                <div class="flex flex-wrap gap-4 items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex flex-wrap items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Renk</label>
+                            <input type="color" id="brush-color" value="#ec4899" class="w-10 h-10 rounded-lg cursor-pointer border-0 p-0">
+                        </div>
+                        <div class="w-px h-8 bg-slate-300 hidden sm:block"></div>
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Boyut</label>
+                            <input type="range" id="brush-size" min="1" max="30" value="4" class="w-24 sm:w-32 accent-pink-500">
+                        </div>
+                        <button onclick="clearCanvas()" class="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600 text-sm font-bold rounded-xl transition ml-auto sm:ml-4">Temizle</button>
+                    </div>
+                    <button onclick="saveDrawing()" class="px-8 py-3 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white text-base font-bold rounded-xl shadow-lg transition">
+                        Tuvali Kaydet
+                    </button>
+                </div>
+                <!-- Canvas Container -->
+                <div class="relative w-full aspect-square sm:aspect-video bg-white rounded-2xl overflow-hidden border-2 border-slate-200 shadow-inner" id="canvas-container">
+                    <canvas id="drawing-canvas" class="absolute top-0 left-0 w-full h-full touch-none cursor-crosshair bg-white"></canvas>
+                </div>
+            </div>
+        </main>
+
+        <!-- Gallery View -->
+        <main id="view-gallery" class="flex-1 flex flex-col items-center py-6 hidden max-w-5xl mx-auto w-full px-4">
+            <div class="w-full flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-3xl font-extrabold text-slate-800">Çizim Galerisi 🖼️</h2>
+                    <p class="text-slate-600 font-medium mt-1">Kaydedilen tüm eserler burada.</p>
+                </div>
+                <button onclick="goToDashboard()" class="px-5 py-2 bg-white/90 hover:bg-white text-slate-700 font-bold rounded-xl shadow-md border border-slate-200 transition">
+                    ← Geri Dön
+                </button>
+            </div>
+
+            <div class="w-full bg-white/80 backdrop-blur-md rounded-[2.5rem] shadow-2xl border border-teal-200 p-6 sm:p-10">
+                <div id="gallery-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+                    <!-- Dinamik Resimler -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="w-full max-w-5xl mx-auto text-center py-6 text-sm font-medium text-slate-500 relative z-10">
+            Yıldızlı Günlükler &amp; Özel Alan © 2026
+        </footer>
+    </div>
+
+    <div id="password-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center px-4 hidden">
+        <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl border border-pink-200 transform transition-all scale-100">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">🔐</div>
+                <h3 id="modal-title" class="text-2xl font-bold text-slate-800 mb-2">Şifre Giriniz</h3>
+                <p id="modal-desc" class="text-sm text-slate-500 font-medium">Bu alana erişim için yetki gerekiyor.</p>
+            </div>
+            <form onsubmit="verifyModalPassword(event)" class="space-y-4">
+                <input type="password" id="modal-password-input" placeholder="Şifre" required
+                    class="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:outline-none focus:border-pink-400 text-center text-lg tracking-widest bg-slate-50">
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closePasswordModal()" class="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition">İptal</button>
+                    <button type="submit" class="flex-1 py-3 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-xl shadow-md shadow-pink-200 transition">Onayla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- YILDIZLI ARKA PLAN ANİMASYONU ---
+        const canvasBg = document.getElementById('starry-canvas');
+        const ctxBg = canvasBg.getContext('2d');
+        let stars = [];
+
+        function resizeCanvas() {
+            canvasBg.width = window.innerWidth;
+            canvasBg.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        for (let i = 0; i < 150; i++) {
+            stars.push({
+                x: Math.random() * canvasBg.width,
+                y: Math.random() * canvasBg.height,
+                radius: Math.random() * 2 + 0.5,
+                alpha: Math.random(),
+                alphaSpeed: Math.random() * 0.01 + 0.005,
+                driftX: (Math.random() - 0.5) * 0.2,
+                driftY: -Math.random() * 0.3 - 0.1
+            });
+        }
+
+        function animateStars() {
+            ctxBg.clearRect(0, 0, canvasBg.width, canvasBg.height);
+            stars.forEach(star => {
+                ctxBg.fillStyle = '#ffffff';
+                ctxBg.globalAlpha = star.alpha;
+                ctxBg.beginPath();
+                ctxBg.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                ctxBg.fill();
+
+                star.x += star.driftX;
+                star.y += star.driftY;
+
+                if (star.y < 0) star.y = canvasBg.height + 10;
+                if (star.x < 0) star.x = canvasBg.width;
+                if (star.x > canvasBg.width) star.x = 0;
+
+                star.alpha += star.alphaSpeed;
+                if (star.alpha > 1 || star.alpha < 0.1) star.alphaSpeed = -star.alphaSpeed;
+            });
+            requestAnimationFrame(animateStars);
+        }
+        animateStars();
+
+        // --- UYGULAMA DURUMU & DEĞİŞKENLER ---
+        let currentSection = 'entry';
+        let activeJournalKey = null;
+        let pendingTarget = null;
+
+        const defaultQuotes = [
+            { text: "Herkesin bir yıldızı vardır, sen benim en parlak yıldızımsın.", author: "Emre" },
+            { text: "Beraber olduğumuz her an, kalbime çizilmiş bir resim gibi.", author: "Ecrin" }
+        ];
+
+        let quotesList = JSON.parse(localStorage.getItem('user_quotes_v2')) || defaultQuotes;
+        let blueJournalText = localStorage.getItem('blue_journal_v2') || "Sevgili Günlük,\nBugün çok güzel bir gündü...";
+        let pinkJournalText = localStorage.getItem('pink_journal_v2') || "Sevgili Günlük,\nİçimden geçenleri buraya döküyorum...";
+        let userDrawings = JSON.parse(localStorage.getItem('user_drawings_v2')) || [];
+
+        // --- GÖRÜNÜM KONTROLLERİ ---
+        function hideAllViews() {
+            const views = ['view-entry', 'view-couple', 'view-dashboard', 'view-journal', 'view-leave-quote', 'view-quotes', 'view-draw', 'view-gallery'];
+            views.forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById('nav-actions').classList.add('hidden');
+        }
+
+        function goToCoupleScene() {
+            hideAllViews();
+            document.getElementById('view-couple').classList.remove('hidden');
+            document.getElementById('nav-actions').classList.remove('hidden');
+            currentSection = 'couple';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function goToDashboard() {
+            hideAllViews();
+            document.getElementById('view-dashboard').classList.remove('hidden');
+            document.getElementById('nav-actions').classList.remove('hidden');
+            currentSection = 'dashboard';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- ŞİFRE MODAL & GİRİŞ İŞLEMLERİ ---
+        function handleEntry(e) {
+            e.preventDefault();
+            const pass = document.getElementById('entry-password').value.trim();
+            if (pass.length > 0) goToCoupleScene();
+            else showCustomMessage("Lütfen şifre giriniz!");
+        }
+
+        function openPasswordModal(target) {
+            pendingTarget = target;
+            document.getElementById('modal-password-input').value = '';
+            
+            const modalConfigs = {
+                'blue': { title: "Mavi Günlük Şifresi", desc: "Mavi defteri açmak için yetki gerekiyor." },
+                'pink': { title: "Pembe Günlük Şifresi", desc: "Pembe defteri açmak için yetki gerekiyor." },
+                'quotes': { title: "Sözler Defteri Şifresi", desc: "Özel sözleri okumak için yetki gerekiyor." },
+                'gallery': { title: "Galeri Şifresi", desc: "Çizilen resimleri görmek için yetki gerekiyor." }
+            };
+            
+            if(modalConfigs[target]) {
+                document.getElementById('modal-title').innerText = modalConfigs[target].title;
+                document.getElementById('modal-desc').innerText = modalConfigs[target].desc;
+                document.getElementById('password-modal').classList.remove('hidden');
+                setTimeout(() => document.getElementById('modal-password-input').focus(), 100);
+            }
+        }
+
+        function closePasswordModal() {
+            document.getElementById('password-modal').classList.add('hidden');
+            pendingTarget = null;
+        }
+
+        function verifyModalPassword(e) {
+            e.preventDefault();
+            const inputPass = document.getElementById('modal-password-input').value.trim().toLowerCase();
+            
+            const passwords = { 'blue': 'emre', 'pink': 'ecrin', 'quotes': 'söz', 'gallery': 'resim' };
+            
+            if (passwords[pendingTarget] && inputPass === passwords[pendingTarget]) {
+                const target = pendingTarget;
+                closePasswordModal();
+                if(target === 'blue' || target === 'pink') openJournal(target);
+                else if(target === 'quotes') openQuotesView();
+                else if(target === 'gallery') openGalleryView();
+            } else {
+                showCustomMessage("Yanlış Şifre! Lütfen doğru şifreyi girin.");
+            }
+        }
+
+        function showCustomMessage(msg) {
+            const modal = document.createElement('div');
+            modal.className = "fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[60] flex items-center justify-center px-4";
+            modal.innerHTML = `
+                <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl text-center border border-pink-200 transform scale-100">
+                    <div class="text-5xl mb-4">ℹ️</div>
+                    <p class="text-slate-800 font-bold text-lg mb-6">${msg}</p>
+                    <button onclick="this.closest('.fixed').remove()" class="w-full py-3 bg-pink-500 text-white font-bold rounded-xl hover:bg-pink-600 transition shadow-md">Tamam</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function openJournal(type) {
+            activeJournalKey = type;
+            hideAllViews();
+            document.getElementById('view-journal').classList.remove('hidden');
+            document.getElementById('nav-actions').classList.remove('hidden');
+
+            const heading = document.getElementById('journal-heading');
+            const label = document.getElementById('journal-label');
+            const textarea = document.getElementById('journal-textarea');
+
+            if (type === 'blue') {
+                heading.innerText = "Mavi Günlük 📘";
+                label.innerText = "MAVİ DEFTER (EMRE)";
+                label.className = "bg-blue-800 text-white py-3 px-6 text-center font-bold tracking-widest text-sm";
+                textarea.value = blueJournalText;
+            } else if (type === 'pink') {
+                heading.innerText = "Pembe Günlük 📔";
+                label.innerText = "PEMBE DEFTER (ECRİN)";
+                label.className = "bg-pink-800 text-white py-3 px-6 text-center font-bold tracking-widest text-sm";
+                textarea.value = pinkJournalText;
+            }
+            window.scrollTo({ top: 0 });
+        }
+
+        function saveJournalNote() {
+            const textareaVal = document.getElementById('journal-textarea').value;
+            if (activeJournalKey === 'blue') {
+                blueJournalText = textareaVal;
+                localStorage.setItem('blue_journal_v2', blueJournalText);
+            } else if (activeJournalKey === 'pink') {
+                pinkJournalText = textareaVal;
+                localStorage.setItem('pink_journal_v2', pinkJournalText);
+            }
+
+            const status = document.getElementById('save-status');
+            status.classList.remove('hidden');
+            setTimeout(() => status.classList.add('hidden'), 3000);
+        }
+
+        function openLeaveQuote() {
+            hideAllViews();
+            document.getElementById('view-leave-quote').classList.remove('hidden');
+            document.getElementById('nav-actions').classList.remove('hidden');
+            document.getElementById('quote-text').value = '';
+            document.getElementById('quote-author').value = '';
+            window.scrollTo({ top: 0 });
+        }
+
+        function submitQuote(e) {
+            e.preventDefault();
+            const testText = document.getElementById('quote-text').value.trim();
+            const author = document.getElementById('quote-author').value.trim() || 'Gizemli Biri';
+
+            if (testText) {
+                quotesList.unshift({ text: testText, author });
+                localStorage.setItem('user_quotes_v2', JSON.stringify(quotesList));
+                showCustomMessage("Sözünüz başarıyla deftere yazıldı!");
+                goToDashboard();
+            }
+        }
+
+        function openQuotesView() {
+            hideAllViews();
+            document.getElementById('view-quotes').classList.remove('hidden');
+            document.getElementById('nav-actions').classList.remove('hidden');
+
+            const container = document.getElementById('quotes-container');
+            container.innerHTML = ``;
+
+            if (quotesList.length === 0) {
+                container.innerHTML = `<p class="text-center text-slate-500 py-10 font-medium">Henüz bir söz yazılmamış...</p>`;
+            } else {
+                quotesList.forEach((q) => {
+                    const item = document.createElement('div');
+                    item.className = "p-6 sm:p-8 rounded-[1.5rem] bg-white border border-amber-200 notebook-paper shadow-md mb-4 transform transition hover:-translate-y-1 hover:shadow-lg";
+                    item.innerHTML = `
+                        <p class="handwriting text-3xl text-slate-800 mb-4 leading-relaxed">"${q.text}"</p>
+                        <div class="text-right text-sm font-bold text-amber-600 uppercase tracking-wider">— ${q.author}</div>
+                    `;
+                    container.appendChild(item);
+                });
+            }
+            window.scrollTo({ top: 0 });
+        }
+
+        let drawCanvas, drawCtx;
+        let isDrawing = false;
+
+        function initCanvas() {
+            drawCanvas = document.getElementById('drawing-canvas');
+            drawCtx = drawCanvas.getContext('2d');
+            const container = document.getElementById('canvas-container');
+            
+            // Set exact dimensions to avoid stretching
+            const rect = container.getBoundingClientRect();
+            drawCanvas.width = rect.width;
+            drawCanvas.height = rect.height;
+
+            drawCtx.fillStyle = '#ffffff';
+            drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+            drawCtx.lineCap = 'round';
+            drawCtx.lineJoin = 'round';
+
+            // Mouse Events
+            drawCanvas.addEventListener('mousedown', startDrawing);
+            drawCanvas.addEventListener('mousemove', draw);
+            drawCanvas.addEventListener('mouseup', stopDrawing);
+            drawCanvas.addEventListener('mouseout', stopDrawing);
+
+            // Touch Events
+            drawCanvas.addEventListener('touchstart', startDrawing, {passive: false});
+            drawCanvas.addEventListener('touchmove', draw, {passive: false});
+            drawCanvas.addEventListener('touchend', stopDrawing);
+            drawCanvas.addEventListener('touchcancel', stopDrawing);
+        }
+
+        function getCoordinates(e) {
+            const rect = drawCanvas.getBoundingClientRect();
+            let clientX, clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            return {
+                x: (clientX - rect.left) * (drawCanvas.width / rect.width),
+                y: (clientY - rect.top) * (drawCanvas.height / rect.height)
+            };
+        }
+
+        function startDrawing(e) {
+            e.preventDefault();
+            isDrawing = true;
+            const pos = getCoordinates(e);
+            drawCtx.beginPath();
+            drawCtx.moveTo(pos.x, pos.y);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            const pos = getCoordinates(e);
+            drawCtx.strokeStyle = document.getElementById('brush-color').value;
+            drawCtx.lineWidth = document.getElementById('brush-size').value;
+            drawCtx.lineTo(pos.x, pos.y);
+            drawCtx.stroke();
+        }
+
+        function stopDrawing(e) {
+            if(e && e.type !== 'mouseout') e.preventDefault();
+            if (isDrawing) {
+                drawCtx.closePath();
+                isDrawing = false;
+            }
+        }
+
+        function clearCanvas() {
+            if (drawCtx && drawCanvas) {
+                drawCtx.fillStyle = '#ffffff';
+                drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+            }
+        }
+
+        function openDrawView() {
+            hideAllViews();
+            document.getElementById('view-draw').classList.remove('hidden');
+            document.getElementById('nav-actions').classList.remove('hidden');
+            // Gecikmeli başlat ki div'in asıl boyutları hesaplanabilsin
+            setTimeout(initCanvas, 100);
+            window.scrollTo({ top: 0 });
+        }
+
+        function saveDrawing() {
+            if (drawCanvas) {
+                const dataURL = drawCanvas.toDataURL('image/png');
+                const dateOpts = { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' };
+                userDrawings.unshift({
+                    image: dataURL,
+                    date: new Date().toLocaleDateString('tr-TR', dateOpts)
+                });
+                localStorage.setItem('user_drawings_v2', JSON.stringify(userDrawings));
+                showCustomMessage("Harika! Eseriniz Galeri'ye kaydedildi.");
+                goToDashboard();
+            }
+        }
+
+        function openGalleryView() {
+            hideAllViews();
+            document.getElementById('view-gallery').classList.remove('hidden');
+            document.getElementById('nav-actions').classList.remove('hidden');
+
+            const container = document.getElementById('gallery-container');
+            container.innerHTML = ``;
+
+            if (userDrawings.length === 0) {
+                container.innerHTML = `<p class="col-span-full text-center text-slate-500 py-12 text-lg font-medium">Galeri henüz boş. Tuvale gidip bir şeyler çizin!</p>`;
+            } else {
+                userDrawings.forEach((drawing) => {
+                    const card = document.createElement('div');
+                    card.className = "bg-white p-4 rounded-[2rem] shadow-lg border border-teal-100 flex flex-col items-center hover:-translate-y-2 hover:shadow-2xl transition duration-300";
+                    card.innerHTML = `
+                        <div class="w-full aspect-square sm:aspect-video rounded-2xl overflow-hidden mb-4 border-2 border-slate-100 bg-slate-50 relative group">
+                            <img src="${drawing.image}" alt="Çizim" class="w-full h-full object-contain">
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <span class="text-white font-bold text-sm bg-black/50 px-3 py-1 rounded-full">🎨 Eser</span>
+                            </div>
+                        </div>
+                        <span class="text-sm text-slate-500 font-bold bg-slate-100 px-4 py-1.5 rounded-full">${drawing.date}</span>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+            window.scrollTo({ top: 0 });
+        }
+    </script>
+</body>
+</html>
